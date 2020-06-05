@@ -4287,9 +4287,13 @@ def assertEqualCoeffDicts(coef1Dict, coef2Dict, tol = 1e-6):
     assert len(coef1Dict) == len(coef2Dict), "Length of first coefficient dict: {0}, length of second coefficient " \
                                              "dict: {1} and they are different.".format(len(coef1Dict, len(coef2Dict)))
     for key in coef1Dict:
-        assert abs(coef1Dict[key]-coef2Dict[key]) < tol, "Coefficient for {0} from first dict: {1}, from second dict:" \
-                                                         " {2} and they are different.".format(key, coef1Dict[key],
-                                                                                               coef2Dict[key])
+        val1 = coef1Dict[key]
+        val2 = coef2Dict[key]
+        if not(math.isnan(val1)) and not(math.isinf(val1)) and not(math.isnan(val2)) and not(math.isinf(val2)):
+            assert abs(coef1Dict[key]-coef2Dict[key]) < tol, "Coefficient for {0} from first dict: {1}, from second" \
+                                                             " dict: {2} and they are different.".format(key, 
+                                                                                                         coef1Dict[key],
+                                                                                                         coef2Dict[key])
 def assertEqualModelMetrics(metrics1, metrics2, tol = 1e-6,
                             keySet=["MSE", "AUC", "Gini", "null_deviance", "logloss", "RMSE",
                                     "pr_auc", "r2"]):

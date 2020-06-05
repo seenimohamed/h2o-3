@@ -101,6 +101,7 @@ public class ArrayUtils {
     return result;
   }
 
+  // Find index of an element out of a sorted array.
   public static<T extends Comparable<T>> int indexOf(T[] arr, T val) {
     int highIndex = arr.length-1;
     int compare0 = val.compareTo(arr[0]); // small shortcut
@@ -431,6 +432,16 @@ public class ArrayUtils {
     for (int index=0; index < arraylen; index++)
       res[index] = ary[index][index];
     return res;
+  }
+  
+  // locate element in array arr within error tolerance
+  public static int locate(double[] arr, double val, double tol) {
+    int arrLen = arr.length;
+    for (int index = 0; index < arrLen; index++) {
+      if (Math.abs(arr[index]-val) < tol) 
+        return index;
+    }
+    return -1;
   }
   
   public static double[] multArrVec(double[][] ary, double[] nums, double[] res) {
