@@ -81,7 +81,7 @@ public class GridSearchHandler<G extends Grid<MP>,
     // Right now only names, no types
     // note: still use _validation_frame and and _training_frame at this point.
     // Do not change those names yet.
-    validateHyperParams((P)gss.parameters, gss.hyper_parameters);
+    validateHyperParams(gss.parameters, gss.hyper_parameters);
 
     // Get actual parameters
     MP params = (MP) gss.parameters.createAndFillImpl();
@@ -107,6 +107,7 @@ public class GridSearchHandler<G extends Grid<MP>,
         sortedMap,
         new DefaultModelParametersBuilderFactory<MP, P>(),
         (HyperSpaceSearchCriteria) gss.search_criteria.createAndFillImpl(), 
+        gss.checkpoint_frames,
         GridSearch.getParallelismLevel(gss.parallelism)
     );
 

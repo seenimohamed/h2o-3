@@ -16,7 +16,7 @@ class FrameReloadTest(unittest.TestCase):
         dataset = "/datasets/mnist/train.csv.gz"
         
         try:
-            cluster_1 = utils.start_cluster("saver")
+            cluster_1 = utils.start_cluster("saver-py")
             h2o.connect(url=cluster_1)
             df_orig = h2o.import_file(path="hdfs://%s%s" % (name_node, dataset))
             df_key = df_orig.key
@@ -24,16 +24,16 @@ class FrameReloadTest(unittest.TestCase):
             df_orig.save(work_dir)
             h2o.connection().close()
         finally:
-            utils.stop_cluster("saver")
+            utils.stop_cluster("saver-py")
         
         try:
-            cluster_2 = utils.start_cluster("loader")
+            cluster_2 = utils.start_cluster("loader-py")
             h2o.connect(url=cluster_2)
             df_loaded = h2o.load_frame(df_key, work_dir)
             df_pd_loaded = df_loaded.as_data_frame()
             h2o.connection().close()
         finally:
-            utils.stop_cluster("loader")
+            utils.stop_cluster("loader-py")
         
         self.assertTrue(df_pd_orig.equals(df_pd_loaded))
 

@@ -152,6 +152,12 @@ public class XGBoostModel extends Model<XGBoostModel, XGBoostModel.XGBoostParame
       return _ntrees;
     }
 
+    @Override
+    protected void collectAllFrames(Map<String, Frame> map) {
+      super.collectAllFrames(map);
+      collectFrame(map, "calibration", _calibration_frame);
+    }
+
     /**
      * Finds parameter settings that are not available on GPU backend.
      * In this case the CPU backend should be used instead of GPU.

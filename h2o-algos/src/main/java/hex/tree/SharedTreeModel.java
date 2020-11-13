@@ -24,6 +24,7 @@ import water.util.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Map;
 
 public abstract class SharedTreeModel<
         M extends SharedTreeModel<M, P, O>,
@@ -88,7 +89,13 @@ public abstract class SharedTreeModel<
     /** Fields which can NOT be modified if checkpoint is specified.
      * FIXME: should be defined in Schema API annotation
      */
-    static String[] CHECKPOINT_NON_MODIFIABLE_FIELDS = { "_build_tree_one_node", "_sample_rate", "_max_depth", "_min_rows", "_nbins", "_nbins_cats", "_nbins_top_level"};
+    static final String[] CHECKPOINT_NON_MODIFIABLE_FIELDS = { "_build_tree_one_node", "_sample_rate", "_max_depth", "_min_rows", "_nbins", "_nbins_cats", "_nbins_top_level"};
+
+    @Override
+    protected void collectAllFrames(Map<String, Frame> map) {
+      super.collectAllFrames(map);
+      collectFrame(map, "calibration", _calibration_frame);
+    }
 
     @Override
     public int getNTrees() {

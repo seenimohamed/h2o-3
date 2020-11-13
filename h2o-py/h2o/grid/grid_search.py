@@ -53,6 +53,8 @@ class H2OGridSearch(h2o_meta(Keyed)):
             >>> criteria = {"strategy": "RandomDiscrete", "stopping_rounds": 5,
             ...             "stopping_metric": "misclassification",
             ...             "stopping_tolerance": 0.00001}
+    :param export_checkpoints_dir: Directory to automatically export grid and its models to.
+    :param checkpoint_frames: With combination with ``export_checkpoints_dir`` will also export frames used by the model.
     :param parallelism: Level of parallelism during grid model building. 1 = sequential building (default). 
          Use the value of 0 for adaptive parallelism - decided by H2O. Any number > 1 sets the exact number of models
          built in parallel.
@@ -72,7 +74,7 @@ class H2OGridSearch(h2o_meta(Keyed)):
 
 
     def __init__(self, model, hyper_params, grid_id=None, search_criteria=None, export_checkpoints_dir=None,
-                 parallelism=1):
+                 checkpoint_frames=False, parallelism=1):
         assert_is_type(model, None, H2OEstimator, lambda mdl: issubclass(mdl, H2OEstimator))
         assert_is_type(hyper_params, dict)
         assert_is_type(grid_id, None, str)
@@ -83,6 +85,7 @@ class H2OGridSearch(h2o_meta(Keyed)):
         self.hyper_params = dict(hyper_params)
         self.search_criteria = None if search_criteria is None else dict(search_criteria)
         self.export_checkpoints_dir = export_checkpoints_dir
+        self.checkpoint_frames = checkpoint_frames
         self._parallelism = parallelism  # Degree of parallelism during model building
         self._grid_json = None
         self.models = None  # list of H2O Estimator instances
@@ -242,7 +245,6 @@ class H2OGridSearch(h2o_meta(Keyed)):
                    validation_frame=validation_frame,
                    **params)
 
-
     def join(self):
         """Wait until grid finishes computing.
 
@@ -265,6 +267,11 @@ class H2OGridSearch(h2o_meta(Keyed)):
         self._job.poll()
         self._job = None
 
+    def cancel(self):
+        """Cancel grid execution."""
+        if self._job is None:
+            raise H2OValueError("Grid is not running.")
+        self._job.cancel()
 
     def train(self, x=None, y=None, training_frame=None, offset_column=None, fold_column=None, weights_column=None,
               validation_frame=None, **params):
@@ -305,6 +312,7 @@ class H2OGridSearch(h2o_meta(Keyed)):
         # dictionaries have special handling in grid search, avoid the implicit conversion
         parms["search_criteria"] = None if self.search_criteria is None else str(self.search_criteria)
         parms["export_checkpoints_dir"] = self.export_checkpoints_dir
+        parms["checkpoint_frames"] = self.checkpoint_frames
         parms["parallelism"] = self._parallelism
         parms["hyper_parameters"] = None if self.hyper_params  is None else str(self.hyper_params) # unique to grid search
         parms.update({k: v for k, v in list(self.model._parms.items()) if v is not None})  # unique to grid search
@@ -393,7 +401,7 @@ class H2OGridSearch(h2o_meta(Keyed)):
         error_index = 0
         if len(grid_json["failure_details"]) > 0:
             print("Errors/Warnings building gridsearch model\n")
-# will raise error if no grid model is returned, store error messages here
+            # will raise error if no grid model is returned, store error messages here
 
             for error_message in grid_json["failure_details"]:
                 if isinstance(grid_json["failed_params"][error_index], dict):

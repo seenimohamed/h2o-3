@@ -16,6 +16,8 @@ import java.util.*;
 import java.util.stream.Stream;
 
 import static hex.grid.HyperSpaceWalker.BaseWalker.SUBSPACES;
+import static water.api.API.Direction.INOUT;
+import static water.api.API.Direction.INPUT;
 
 /**
  * This is a common grid search schema composed of two parameters: default parameters for a builder
@@ -37,21 +39,27 @@ public class GridSearchSchema<G extends Grid<MP>,
   //
   // Inputs
   //
-  @API(help = "Basic model builder parameters.", direction = API.Direction.INPUT)
+  @API(help = "Basic model builder parameters.", direction = INPUT)
   public P parameters;
 
-  @API(help = "Grid search parameters.", direction = API.Direction.INOUT)
+  @API(help = "Grid search parameters.", direction = INOUT)
   public IcedHashMap<String, Object[]> hyper_parameters;
 
-  @API(help = "Destination id for this grid; auto-generated if not specified.", direction = API.Direction.INOUT)
+  @API(help = "Destination id for this grid; auto-generated if not specified.", direction = INOUT)
   public KeyV3.GridKeyV3 grid_id;
 
-  @API(help="Hyperparameter search criteria, including strategy and early stopping directives.  If it is not given, exhaustive Cartesian is used.", required = false, direction = API.Direction.INOUT)
+  @API(help="Hyperparameter search criteria, including strategy and early stopping directives. If it is not given, " +
+      "exhaustive Cartesian is used.", direction = INOUT)
   public HyperSpaceSearchCriteriaV99 search_criteria;
 
-  @API(help = "Level of parallelism during grid model building. 1 = sequential building (default). 0 for adaptive parallelism." +
-          "Any number > 1 sets the exact number of models built in parallel.")
+  @API(help = "Level of parallelism during grid model building. 1 = sequential building (default). 0 for adaptive " +
+      "parallelism. Any number > 1 sets the exact number of models built in parallel.")
   public int parallelism;
+  
+  @API(help= "If true, with combination with export_checpoints_dir will also save data frames.", 
+      direction = INPUT)
+  public boolean checkpoint_frames;
+  
   //
   // Outputs
   //
@@ -152,6 +160,14 @@ public class GridSearchSchema<G extends Grid<MP>,
       parms.remove("parallelism");
     } else {
       this.parallelism = SEQUENTIAL_GRID_SEARCH;
+    }
+
+    if (parms.containsKey("checkpoint_frames")) {
+      final String checkpointFramesProperty = parms.getProperty("checkpoint_frames");
+      this.checkpoint_frames = Boolean.parseBoolean(checkpointFramesProperty);
+      parms.remove("checkpoint_frames");
+    } else {
+      this.checkpoint_frames = false;
     }
 
     // Do not check validity of parameters, GridSearch is tolerant of bad

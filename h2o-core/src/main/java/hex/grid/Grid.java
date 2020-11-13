@@ -4,20 +4,21 @@ import hex.*;
 import water.*;
 import water.api.schemas3.KeyV3;
 import water.fvec.Frame;
-import water.persist.Persist;
+import water.fvec.persist.FramePersist;
+import water.fvec.persist.PersistUtils;
 import water.util.*;
 import water.util.PojoUtils.FieldNaming;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.lang.reflect.Array;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 import static hex.grid.GridSearch.IGNORED_FIELDS_PARAM_HASH;
+import static java.util.stream.Collectors.toMap;
 
 /**
  * A Grid of Models representing result of hyper-parameter space exploration.
@@ -34,6 +35,8 @@ public class Grid<MP extends Model.Parameters> extends Lockable<Grid<MP>> implem
    * @see hex.schemas.GridSchemaV99
    */
   public static final Grid GRID_PROTO = new Grid(null, null, null, null);
+
+  public static final String FRAMES_META_FILE_SUFFIX = "_frames";
 
   // A cache of double[] hyper-parameters mapping to Models.
   private final IcedHashMap<IcedLong, Key<Model>> _models = new IcedHashMap<>();
@@ -514,17 +517,12 @@ public class Grid<MP extends Model.Parameters> extends Lockable<Grid<MP>> implem
    * @param gridExportDir Full path to the folder this {@link Grid} should be saved to
    * @throws IOException Error serializing the grid.
    */
-  public void exportBinary(final String gridExportDir) throws IOException {
+  public void exportBinary(final String gridExportDir) {
     Objects.requireNonNull(gridExportDir);
-    final String gridFilePath = gridExportDir + "/" + _key.toString();
     assert _key != null;
+    final String gridFilePath = gridExportDir + "/" + _key;
     final URI gridUri = FileUtils.getURI(gridFilePath);
-    final Persist persist = H2O.getPM().getPersistForURI(gridUri);
-    try (final OutputStream outputStream = persist.create(gridUri.toString(), true)) {
-      final AutoBuffer autoBuffer = new AutoBuffer(outputStream, true);
-      writeWithoutModels(autoBuffer);
-      autoBuffer.close();
-    }
+    PersistUtils.write(gridUri, this::writeWithoutModels);
   }
 
   /**
@@ -538,6 +536,31 @@ public class Grid<MP extends Model.Parameters> extends Lockable<Grid<MP>> implem
     for (Model model : getModels()) {
       model.exportBinaryModel(exportDir + "/" + model._key.toString(), true);
     }
+  }
+
+  /**
+   * Saves all of the frames used by this Grid's params. Frames are named by their keys.
+   * @param exportDir directory to export all the frames to
+   */
+  public void exportFramesBinary(final String exportDir) {
+    Map<String, Frame> frames = getParams().getAllFrames();
+    frames.values().stream()
+        .map(frame -> new FramePersist(frame).saveTo(exportDir, true))
+        .forEach(job -> {
+          job.get(); // Wait for the persist operation ot complete.
+          if (job.isCrashed()) {
+            throw new RuntimeException("Unable to export frame " + job.get()._key, job.ex());
+          }
+        });
+    Map<String, Key<Frame>> frameKeyMap = frames.entrySet().stream().collect(toMap(
+        Map.Entry::getKey,
+        e -> e.getValue()._key
+    ));
+    IcedHashMap<String, Key<Frame>> frameKeyMapIced = new IcedHashMap<>();
+    frameKeyMapIced.putAll(frameKeyMap);
+    final String framesFilePath = exportDir + "/" + _key + FRAMES_META_FILE_SUFFIX;
+    final URI framesUri = FileUtils.getURI(framesFilePath);
+    PersistUtils.write(framesUri, ab -> ab.put(frameKeyMapIced));
   }
 
   public MP getParams() {

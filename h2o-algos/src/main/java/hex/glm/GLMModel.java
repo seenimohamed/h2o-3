@@ -242,7 +242,6 @@ public class GLMModel extends Model<GLMModel,GLMModel.GLMParameters,GLMModel.GLM
     public String fullName() { return "Generalized Linear Modeling"; }
     public String javaName() { return GLMModel.class.getName(); }
     @Override public long progressUnits() { return GLM.WORK_TOTAL; }
-    // public int _response; // TODO: the standard is now _response_column in SupervisedModel.SupervisedParameters
     public boolean _standardize = true;
     public boolean _useDispersion1 = false; // internal use only, not for users
     public Family _family;
@@ -475,6 +474,13 @@ public class GLMModel extends Model<GLMModel,GLMModel.GLMParameters,GLMModel.GLM
       _link = l;
       this._theta=theta;
       this._invTheta = 1.0/theta;
+    }
+
+    @Override
+    protected void collectAllFrames(Map<String, Frame> map) {
+      super.collectAllFrames(map);
+      collectFrame(map, "plug_values", _plug_values);
+      collectFrame(map, "beta_constraints", _beta_constraints);
     }
 
     public final double variance(double mu){

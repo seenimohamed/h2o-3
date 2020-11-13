@@ -59,7 +59,7 @@ public class GridTest extends TestUtil {
       Job<Grid> gridSearch = GridSearch.startGridSearch(null, params,
               hyperParms,
               new GridSearch.SimpleParametersBuilderFactory(),
-              searchCriteria, 2);
+              searchCriteria, false, 2);
 
       Scope.track_generic(gridSearch);
       final Grid grid = gridSearch.get();
@@ -95,7 +95,7 @@ public class GridTest extends TestUtil {
       Job<Grid> gridSearch = GridSearch.startGridSearch(null, params,
               hyperParms,
               new GridSearch.SimpleParametersBuilderFactory(),
-              new HyperSpaceSearchCriteria.CartesianSearchCriteria(), 2);
+              new HyperSpaceSearchCriteria.CartesianSearchCriteria(), false, 2);
       Scope.track_generic(gridSearch);
       gridSearch.stop();
       final Grid grid = gridSearch.get();
@@ -538,7 +538,7 @@ public class GridTest extends TestUtil {
       int custom_max_model = 2;
       hyperSpaceSearchCriteria.set_max_models(custom_max_model);
 
-      Job<Grid> gs = GridSearch.startGridSearch(null, params, hyperParms, simpleParametersBuilderFactory, hyperSpaceSearchCriteria, 4);
+      Job<Grid> gs = GridSearch.startGridSearch(null, params, hyperParms, simpleParametersBuilderFactory, hyperSpaceSearchCriteria, false, 4);
       Scope.track_generic(gs);
       final Grid grid1 = gs.get();
       Scope.track_generic(grid1);
@@ -574,7 +574,7 @@ public class GridTest extends TestUtil {
       int custom_max_model = 3;
       hyperSpaceSearchCriteria.set_max_models(custom_max_model);
 
-      Job<Grid> gs = GridSearch.startGridSearch(null, params, hyperParms, simpleParametersBuilderFactory, hyperSpaceSearchCriteria, 2);
+      Job<Grid> gs = GridSearch.startGridSearch(null, params, hyperParms, simpleParametersBuilderFactory, hyperSpaceSearchCriteria, false, 2);
       Scope.track_generic(gs);
       final Grid grid1 = gs.get();
       Scope.track_generic(grid1);

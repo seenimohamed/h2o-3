@@ -302,6 +302,12 @@ public class Word2VecModel extends Model<Word2VecModel, Word2VecParameters, Word
     public Key<Frame> _pre_trained;  // key of a frame that contains a pre-trained word2vec model
     boolean isPreTrained() { return _pre_trained != null; }
     Vec trainVec() { return train().vec(0); }
+
+    @Override
+    protected void collectAllFrames(Map<String, Frame> map) {
+      super.collectAllFrames(map);
+      collectFrame(map, "pre_trained", _pre_trained);
+    }
   }
 
   public static class Word2VecOutput extends Model.Output {
