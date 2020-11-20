@@ -18,7 +18,6 @@ import water.util.ArrayUtils;
 import water.util.TwoDimTable;
 
 import java.util.ArrayList;
-import java.util.Map;
 
 /**
  * GLRM (<a href="https://web.stanford.edu/~boyd/papers/pdf/glrm.pdf">Generalized Low Rank Model</a>).
@@ -96,12 +95,6 @@ public class GLRMModel extends Model<GLRMModel, GLRMModel.GLRMParameters, GLRMMo
     public boolean _impute_original = false;      // Reconstruct original training data by reversing _transform?
     public boolean _verbose = true;               // Log when objective increases each iteration?
 
-    @Override
-    protected void collectAllFrames(Map<String, Frame> map) {
-      super.collectAllFrames(map);
-      collectFrame(map, "user_x", _user_x);
-      collectFrame(map, "user_y", _user_y);
-    }
   }
 
 

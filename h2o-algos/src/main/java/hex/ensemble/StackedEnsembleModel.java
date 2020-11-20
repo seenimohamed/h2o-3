@@ -1,6 +1,9 @@
 package hex.ensemble;
 
-import hex.*;
+import hex.Distribution;
+import hex.Model;
+import hex.ModelCategory;
+import hex.ModelMetrics;
 import hex.genmodel.utils.DistributionFamily;
 import hex.glm.GLMModel;
 import hex.tree.drf.DRFModel;
@@ -14,7 +17,6 @@ import water.util.ReflectionUtils;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
-import java.util.Map;
 import java.util.stream.Stream;
 
 import static hex.Model.Parameters.FoldAssignmentScheme.AUTO;
@@ -76,12 +78,6 @@ public class StackedEnsembleModel extends Model<StackedEnsembleModel,StackedEnse
     public String _metalearner_params = new String(); //used for clients code-gen only.
     public Model.Parameters _metalearner_parameters;
     public long _score_training_samples = 10_000;
-
-    @Override
-    protected void collectAllFrames(Map<String, Frame> map) {
-      super.collectAllFrames(map);
-      collectFrame(map, "blending", _blending);
-    }
 
     /**
      * initialize {@link #_metalearner_parameters} with default parameters for the current {@link #_metalearner_algorithm}.

@@ -19,7 +19,6 @@ import water.util.JCodeGen;
 import water.util.SBPrintStream;
 
 import java.util.Arrays;
-import java.util.Map;
 
 import static hex.genmodel.GenModel.Kmeans_preprocessData;
 
@@ -40,11 +39,6 @@ public class KMeansModel extends ClusteringModel<KMeansModel,KMeansModel.KMeansP
     public boolean _estimate_k = false;       // If enabled, iteratively find up to _k clusters
     public int[] _cluster_size_constraints = null;
 
-    @Override
-    protected void collectAllFrames(Map<String, Frame> map) {
-      super.collectAllFrames(map);
-      collectFrame(map, "user_points", _user_points);
-    }
   }
 
   public static class KMeansOutput extends ClusteringModel.ClusteringOutput {

@@ -20,7 +20,8 @@ import water.udf.CFuncRef;
 import water.util.*;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
 
 import static hex.genmodel.utils.ArrayUtils.flat;
 import static hex.schemas.GLMModelV3.GLMModelOutputV3.calculateVarimpMultinomial;
@@ -474,13 +475,6 @@ public class GLMModel extends Model<GLMModel,GLMModel.GLMParameters,GLMModel.GLM
       _link = l;
       this._theta=theta;
       this._invTheta = 1.0/theta;
-    }
-
-    @Override
-    protected void collectAllFrames(Map<String, Frame> map) {
-      super.collectAllFrames(map);
-      collectFrame(map, "plug_values", _plug_values);
-      collectFrame(map, "beta_constraints", _beta_constraints);
     }
 
     public final double variance(double mu){

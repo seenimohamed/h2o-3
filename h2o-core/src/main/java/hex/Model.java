@@ -400,41 +400,6 @@ public abstract class Model<M extends Model<M,P,O>, P extends Model.Parameters, 
      *  if a validation frame was not specified */
     public final Frame valid() { return _valid==null ? null : _valid.get(); }
 
-    /**
-     * @return all Frames used by these params
-     */
-    public final Map<String, Frame> getAllFrames() {
-      Map<String, Frame> framesMap = new HashMap<>();
-      collectAllFrames(framesMap);
-      return framesMap;
-    }
-
-    /**
-     * Override this method to register additional frames used by Model subclass.
-     * @param map map of all frames, add additional models to this map by calling {@link #collectFrame(Map, String, Key)}
-     */
-    protected void collectAllFrames(Map<String, Frame> map) {
-      collectFrame(map, "train", _train);
-      collectFrame(map, "valid", _valid);
-    }
-
-    /**
-     * Adds a frame to the supplied map of used frames.
-     * @param map the frame will be added to this {@link Map}
-     * @param name name of the frame, must be unique for this type of model
-     * @param key frame key
-     * @throws IllegalArgumentException in case frame with the same name is already defined
-     */
-    protected void collectFrame(Map<String, Frame> map, String name, Key<Frame> key) {
-      Objects.requireNonNull(name);
-      if (map.containsKey(name)) {
-        throw new IllegalArgumentException("Frame with key " + key + " already present in the map.");
-      }
-      if (key != null) {
-        map.put(name, key.get());
-      }
-    }
-    
     public String[] getNonPredictors() {
         return Arrays.stream(new String[]{_weights_column, _offset_column, _fold_column, _response_column})
                 .filter(Objects::nonNull)

@@ -3,8 +3,6 @@ package hex.deeplearning;
 import hex.*;
 import hex.genmodel.CategoricalEncoding;
 import hex.genmodel.utils.DistributionFamily;
-import hex.quantile.Quantile;
-import hex.quantile.QuantileModel;
 import hex.util.EffectiveParametersUtils;
 import hex.util.LinearAlgebraUtils;
 import water.*;
@@ -21,7 +19,6 @@ import water.util.*;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
-import java.util.Map;
 
 import static hex.ModelMetrics.calcVarImp;
 import static hex.deeplearning.DeepLearning.makeDataInfo;
@@ -1317,21 +1314,6 @@ public class DeepLearningModel extends Model<DeepLearningModel,DeepLearningModel
     @Override
     public double missingColumnsType() {
       return _sparse ? 0 : Double.NaN;
-    }
-
-    @Override
-    protected void collectAllFrames(Map<String, Frame> map) {
-      super.collectAllFrames(map);
-      if (_initial_biases != null) {
-        for (int i = 0; i < _initial_biases.length; i++) {
-          collectFrame(map, "initial_biases_" + i, _initial_biases[i]);
-        }
-      }
-      if (_initial_weights != null) {
-        for (int i = 0; i < _initial_weights.length; i++) {
-          collectFrame(map, "initial_weights_" + i, _initial_weights[i]);
-        }
-      }
     }
 
     /**

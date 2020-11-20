@@ -11,14 +11,11 @@ import water.util.PojoUtils.FieldNaming;
 
 import java.io.IOException;
 import java.lang.reflect.Array;
+import java.lang.reflect.Field;
 import java.net.URI;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 import static hex.grid.GridSearch.IGNORED_FIELDS_PARAM_HASH;
-import static java.util.stream.Collectors.toMap;
 
 /**
  * A Grid of Models representing result of hyper-parameter space exploration.
@@ -36,7 +33,7 @@ public class Grid<MP extends Model.Parameters> extends Lockable<Grid<MP>> implem
    */
   public static final Grid GRID_PROTO = new Grid(null, null, null, null);
 
-  public static final String FRAMES_META_FILE_SUFFIX = "_frames";
+  public static final String REFERENCES_META_FILE_SUFFIX = "_references";
 
   // A cache of double[] hyper-parameters mapping to Models.
   private final IcedHashMap<IcedLong, Key<Model>> _models = new IcedHashMap<>();
@@ -538,29 +535,66 @@ public class Grid<MP extends Model.Parameters> extends Lockable<Grid<MP>> implem
     }
   }
 
+  @SuppressWarnings("rawtypes")
+  private Set<Key> getDependentKeysFromParams() {
+    Field[] fields = Weaver.getWovenFields(getParams().getClass());
+    Set<Key> values = new HashSet<>();
+    for (Field f : fields) {
+      f.setAccessible(true);
+      Class<?> c = f.getType();
+      try {
+        Object value = f.get(getParams());
+        if (value instanceof Key) {
+          values.add((Key) value);
+        } else if (value != null && c.isArray() && c.getComponentType() == Key.class) {
+          Key[] arr = (Key[]) value;
+          for (Key k : arr) 
+            if (k != null) values.add(k);
+        }
+      } catch (IllegalAccessException e) {
+        throw new RuntimeException(e);
+      }
+    }
+    return values;
+  }
+  
+  private Job persistObj(
+      final Keyed o,
+      final String exportDir,
+      Map<String, String> referenceKeyTypeMap
+  ) {
+    if (o instanceof Frame) {
+      referenceKeyTypeMap.put(o._key.toString(), "frame");
+      return new FramePersist((Frame) o).saveTo(exportDir, true);
+    } else if (o != null) {
+      referenceKeyTypeMap.put(o._key.toString(), "iced");
+      URI dest = FileUtils.getURI(exportDir + "/" + o._key);
+      PersistUtils.write(dest, ab -> ab.putKey(o._key));
+    }
+    return null;
+  }
+
   /**
-   * Saves all of the frames used by this Grid's params. Frames are named by their keys.
+   * Saves all of the keyed objects used by this Grid's params. Files are named by objects' keys.
+   *
    * @param exportDir directory to export all the frames to
    */
-  public void exportFramesBinary(final String exportDir) {
-    Map<String, Frame> frames = getParams().getAllFrames();
-    frames.values().stream()
-        .map(frame -> new FramePersist(frame).saveTo(exportDir, true))
+  public void exportReferencesBinary(final String exportDir) {
+    final Set<Key> keys = getDependentKeysFromParams();
+    final IcedHashMap<String, String> referenceKeyTypeMap = new IcedHashMap<>();
+    keys.stream()
+        .map(Key::get)
+        .map(obj -> persistObj(obj, exportDir, referenceKeyTypeMap))
         .forEach(job -> {
+          if (job == null) return;
           job.get(); // Wait for the persist operation ot complete.
           if (job.isCrashed()) {
             throw new RuntimeException("Unable to export frame " + job.get()._key, job.ex());
           }
         });
-    Map<String, Key<Frame>> frameKeyMap = frames.entrySet().stream().collect(toMap(
-        Map.Entry::getKey,
-        e -> e.getValue()._key
-    ));
-    IcedHashMap<String, Key<Frame>> frameKeyMapIced = new IcedHashMap<>();
-    frameKeyMapIced.putAll(frameKeyMap);
-    final String framesFilePath = exportDir + "/" + _key + FRAMES_META_FILE_SUFFIX;
+    final String framesFilePath = exportDir + "/" + _key + REFERENCES_META_FILE_SUFFIX;
     final URI framesUri = FileUtils.getURI(framesFilePath);
-    PersistUtils.write(framesUri, ab -> ab.put(frameKeyMapIced));
+    PersistUtils.write(framesUri, ab -> ab.put(referenceKeyTypeMap));
   }
 
   public MP getParams() {

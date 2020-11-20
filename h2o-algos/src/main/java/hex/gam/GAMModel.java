@@ -19,7 +19,6 @@ import water.util.*;
 
 import java.io.Serializable;
 import java.util.Arrays;
-import java.util.Map;
 
 import static hex.gam.MatrixFrameUtils.GamUtils.equalColNames;
 import static hex.gam.MatrixFrameUtils.GamUtils.sortCoeffMags;
@@ -286,13 +285,6 @@ public class GAMModel extends Model<GAMModel, GAMModel.GAMParameters, GAMModel.G
     }
 
     public long _seed = -1;
-
-    @Override
-    protected void collectAllFrames(Map<String, Frame> map) {
-      super.collectAllFrames(map);
-      collectFrame(map, "plug_values", _plug_values);
-      collectFrame(map, "beta_constraints", _beta_constraints);
-    }
 
     public InteractionSpec interactionSpec() {
       return InteractionSpec.create(_interactions, _interaction_pairs);

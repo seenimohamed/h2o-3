@@ -458,7 +458,7 @@ public final class GridSearch<MP extends Model.Parameters> extends Keyed<GridSea
   private void beforeGridStart(Grid grid) {
     if (_exportFrames) {
       attemptGridSave(grid);
-      grid.exportFramesBinary(_hyperSpaceWalker.getParams()._export_checkpoints_dir);
+      grid.exportReferencesBinary(_hyperSpaceWalker.getParams()._export_checkpoints_dir);
     }
   }
   

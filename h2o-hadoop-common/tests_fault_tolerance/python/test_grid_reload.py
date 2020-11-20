@@ -41,7 +41,15 @@ class GridReloadTest(unittest.TestCase):
             )
             print("starting initial grid and sleeping...")
             grid.start(x=list(range(4)), y=4, training_frame=train)
-            time.sleep(30)
+            grid_in_progress = None
+            times_waited = 0
+            while (times_waited < 20) and (grid_in_progress is None or len(grid_in_progress.model_ids) == 0):
+                time.sleep(5)  # give it tome to train some models
+                times_waited += 1
+                try:
+                    grid_in_progress = h2o.get_grid(grid_id)
+                except IndexError:
+                    print("no models trained yet")
             print("done sleeping")
             h2o.connection().close()
         finally:
