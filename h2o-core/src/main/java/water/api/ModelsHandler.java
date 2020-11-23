@@ -22,16 +22,6 @@ import java.util.*;
 public class ModelsHandler<I extends ModelsHandler.Models, S extends SchemaV3<I,S>>
     extends Handler {
 
-  @SuppressWarnings("unused")
-  public DomainsV3 getDomains(int version, DomainsV3 dom) {
-    Model model = getFromDKV("model_id", dom.model_id.key());
-
-    dom.domains = model._output._domains;
-    dom.names = model._output._origNames != null? model._output._origNames : model._output._names;
-    return dom;
-  }
-
-
   /** Class which contains the internal representation of the models list and params. */
   public static final class Models extends Iced {
     public Key model_id;

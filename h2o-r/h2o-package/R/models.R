@@ -5070,13 +5070,11 @@ h2o.reset_threshold <- function(object, threshold) {
   }
 }
 
-#' Get domains for categorical columns
+#' Get a mapping between columns and their domains
 #' @param model an h2o model
+#' @return list containing a mapping from column to its domains (levels)
 .h2o.__get_domain_mapping <- function(model) {
-  domains_response <- .h2o.__remoteSend(paste0("Models/", model@model_id,"/domains"), method = "GET",
-                                        h2oRestApiVersion = 3)
-
-  domains <- domains_response$domains
-  domains <- stats::setNames(domains, domains_response$names)
-  domains
+  domains <- model@model$domains
+  domains <- stats::setNames(domains, model@model$names)
+  return(domains)
 }

@@ -278,10 +278,6 @@ public class RegisterV3Api extends AbstractRegister {
             "GET /99/Models/{model_id}/json", ModelsHandler.class, "exportModelDetails",
             "Export given model details in json format.");
 
-    context.registerEndpoint("getDomains",
-            "GET /3/Models/{model_id}/domains", ModelsHandler.class, "getDomains",
-            "Get domains for a model.");
-
     context.registerEndpoint("grid",
             "GET /99/Grids/{grid_id}", GridsHandler.class, "fetch",
             "Return the specified grid search result.");

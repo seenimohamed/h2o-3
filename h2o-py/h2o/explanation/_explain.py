@@ -1330,6 +1330,15 @@ def _consolidate_varimps(model):
     to_process = {k: v for k, v in varimp.items() if k not in x}
 
     domain_mapping = model.get_domain_mapping()
+    encoded_cols = ["{}.{}".format(name, domain)
+                    for name, domains in domain_mapping.items()
+                    if domains is not None
+                    for domain in domains + ["missing(NA)"]]
+    if len(encoded_cols) > len(set(encoded_cols)):
+        for x in set(encoded_cols):
+            encoded_cols.remove(x)
+        raise RuntimeError("Ambiguous encoding of the column x category pairs: {}".format(set(encoded_cols)))
+
     varimp_to_col = {"{}.{}".format(name, domain): name
                      for name, domains in domain_mapping.items()
                      if domains is not None

@@ -20,7 +20,6 @@ water.api.schemas3.ConfusionMatrixV3
 water.api.schemas3.CreateFrameV3
 water.api.schemas3.DCTTransformerV3
 water.api.schemas3.DownloadDataV3
-water.api.schemas3.DomainsV3
 water.api.schemas3.FieldMetadataV3
 water.api.schemas3.FindV3
 water.api.schemas3.FrameBaseV3
